@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import '../App.css';
-import '../transitions.css';
+import { motion } from 'framer-motion';
+import axios from 'axios';
+import { toast, Flip } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons';
 import {
   faTwitter,
   faFacebook,
@@ -11,82 +12,121 @@ import {
   faInstagram,
 } from '@fortawesome/free-brands-svg-icons';
 
+import '../App.css';
+import '../transitions.css';
+
 import Navbar from './Navbar';
 import Carousel from './Carousel';
+import UserContainer from './UserContainer';
 
+import DefaultProfileImage from '../assets/default-profile.png';
 import FeaturesImage1 from '../assets/Features1.svg';
 import FeaturesImage2 from '../assets/Features2.svg';
 import Fan from '../assets/fan.svg';
-// import Dot from '../assets/dot.svg';
-// import Circle from '../assets/circle.svg';
 
 function LandingPage() {
+  const [user, setUser] = useState(false);
+  const [anonymous, setAnonymous] = useState(true);
+
   const handler = () => {
     const nav = document.getElementById('HeaderItemsContainer');
     const header = document.getElementById('TopLeftAppSection');
     const navItems = document.getElementById('HeaderItems');
-    const login = document.getElementById('Login');
-    const hamLogo = document.getElementById('Hamburger');
+
+    if (document.getElementById('HamProfileContainer')) {
+      document.getElementById('HamProfileContainer').classList.toggle('profile-show');
+    }
+
+    if (document.getElementById('Hamburger')) {
+      const hamLogo = document.getElementById('Hamburger');
+      hamLogo.classList.toggle('ham-logo');
+    } else if (document.getElementById('HamburgerProfilePicture')) {
+      const hamProfilePicture = document.getElementById('HamburgerProfilePicture');
+      hamProfilePicture.classList.toggle('hamProfilePicture-logo');
+    }
 
     nav.classList.toggle('show');
     header.classList.toggle('fix');
     navItems.classList.toggle('nav-items');
-    login.classList.toggle('login');
-    hamLogo.classList.toggle('ham-logo');
   };
 
+  const userName = JSON.parse(localStorage.getItem('userDetails')) !== null ? JSON.parse(localStorage.getItem('userDetails')).first_name : '';
+
   useEffect(() => {
-    window.onload = () => {
-      const transition_element = document.querySelector('.transition');
-      const hiddenLoginLink = document.getElementById('Login');
-      const rightLinks = document.getElementsByClassName('RightMainHeaderAction');
-
-      setTimeout(() => {
-        transition_element.classList.remove('is-active');
-      }, 150);
-
-      for (let i = 0; i < rightLinks.length; i += 1) {
-        const rightLink = rightLinks[i];
-
-        rightLink.addEventListener('click', (e) => {
-          e.preventDefault();
-          const target = e.target.href;
-          transition_element.classList.add('is-active');
-
-          setTimeout(() => {
-            window.location.href = target;
-          }, 1500);
+    if (localStorage.getItem('accessToken')) {
+      axios({
+        method: 'GET',
+        url: 'https://api.iot.puyinfotech.com/api/user/',
+        headers: {
+          'x-access-token': localStorage.getItem('accessToken'),
+        },
+      })
+        .then(() => {
+          setAnonymous(false);
+          setUser(true);
+          document.getElementById('RightHeaderItemsContainer').classList.add('userAvailable');
+        })
+        .catch(() => {
+          toast.error('Session expired! Please login again.', {
+            position: 'top-center',
+            autoClose: '3000',
+            transition: Flip,
+          });
         });
-      }
+    } else {
+      // console.log('No token stored');
+      setUser(false);
+      setAnonymous(true);
+      document.getElementById('RightHeaderItemsContainer').classList.remove('userAvailable');
+    }
 
-      hiddenLoginLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = e.target.href;
-        transition_element.classList.add('is-active');
+    if (document.getElementById('Hamburger')) {
+      document.getElementById('Hamburger').addEventListener('click', handler);
+    } else if (document.getElementById('HamburgerProfilePicture')) {
+      document.getElementById('HamburgerProfilePicture').addEventListener('click', handler);
+    }
 
-        setTimeout(() => {
-          window.location.href = target;
-        }, 1500);
-      });
-    };
-
-    const ham = document.getElementById('Hamburger');
-    ham.addEventListener('click', handler);
     return () => {
-      ham.removeEventListener('click', handler);
+      if (document.getElementById('Hamburger')) {
+        document.getElementById('Hamburger').removeEventListener('click', handler);
+      } else if (document.getElementById('HamburgerProfilePicture')) {
+        document.getElementById('HamburgerProfilePicture').removeEventListener('click', handler);
+      }
     };
   });
 
+  const pageTransition = {
+    initial: {
+      top: 0,
+    },
+    animate: {
+      top: '100%',
+      transition: { duration: 1.5, ease: [0.9, 0, 0.1, 1] },
+    },
+    exit: {
+      top: 0,
+      transition: { duration: 1.5, ease: [0.9, 0, 0.1, 1] },
+    },
+  };
+
   return (
     <>
-      <div className="transition transition-1 is-active" />
+      {/* <div className="transition transition-1 is-active" /> */}
+      <motion.div id="transition" className="transition transition-1" initial="initial" animate="animate" exit="exit" variants={pageTransition} />
 
       <div className="App" id="App">
-        <Navbar activeLink="home" isHiddenUponScroll />
+        {anonymous
+        && (
+          <Navbar activeLink="home" isHiddenUponScroll />
+        )}
+        {user
+        && (
+          <Navbar activeLink="home" isHiddenUponScroll isUserLogin />
+        )}
         <div className="LeftAppSectionContainer">
           <div className="LeftAppSection">
             <header className="TopLeftAppSection" id="TopLeftAppSection">
-              <Link to="/">
+              <Link to="/" style={{ pointerEvents: 'none' }}>
                 <div id="LogoSection">
                   <div id="Logo" />
                   <span className="LogoName" style={{ color: '#101010' }}>
@@ -95,14 +135,34 @@ function LandingPage() {
                   <span className="LogoName">Control</span>
                 </div>
               </Link>
-              <div id="Hamburger" className="Hamburger">
-                <FontAwesomeIcon
-                  id="ham-bars"
-                  className="ham-bars"
-                  icon={faBars}
-                />
-              </div>
+              {user
+              && (
+                <div className="HamburgerProfilePicture" id="HamburgerProfilePicture" title={userName}>
+                  <img src={DefaultProfileImage} alt="Profile" />
+                </div>
+              )}
+              {anonymous
+              && (
+                <div id="Hamburger" className="Hamburger">
+                  <FontAwesomeIcon
+                    id="ham-bars"
+                    className="ham-bars"
+                    icon={faBars}
+                  />
+                </div>
+              )}
               <div className="HeaderItemsContainer" id="HeaderItemsContainer">
+                {user
+                && (
+                  <Link to="/usersetting">
+                    <div className="HamProfileContainer" id="HamProfileContainer">
+                      <div className="ProfilePicture" id="HamProfilePicture" title={userName}>
+                        <img src={DefaultProfileImage} alt="Profile" />
+                      </div>
+                      <span id="HamUserName">{userName}</span>
+                    </div>
+                  </Link>
+                ) }
                 <ul className="HeaderItems" id="HeaderItems">
                   <li className="HeaderListItems" id="active">
                     <Link className="MainHeaderAction" to="/">
@@ -115,15 +175,33 @@ function LandingPage() {
                     </Link>
                   </li>
                   <li className="HeaderListItems">
-                    <Link className="MainHeaderAction" to="/about">
-                      About Us
+                    <Link className="MainHeaderAction" to="/contactus">
+                      Contact Us
                     </Link>
                   </li>
-                  <li id="HiddenLogin" className="HeaderListItems">
-                    <Link id="Login" className="LoginButton" to="/login">
-                      Log In
-                    </Link>
-                  </li>
+                  {anonymous
+                  && (
+                    <li id="HiddenLogin" className="HeaderListItems">
+                      <Link id="Login" className="LoginButton" to="/login">
+                        Log In
+                      </Link>
+                    </li>
+                  )}
+                  {user
+                  && (
+                    <>
+                      <li id="HiddenLogout" className="HeaderListItems">
+                        <Link id="Logout" className="LogoutButton" to="/login">
+                          Log Out
+                        </Link>
+                      </li>
+                      <div className="ProfilePicture" id="ProfilePicture">
+                        <Link to="/usersetting">
+                          <img src={DefaultProfileImage} alt="Profile" />
+                        </Link>
+                      </div>
+                    </>
+                  )}
                 </ul>
               </div>
             </header>
@@ -158,8 +236,19 @@ function LandingPage() {
                 Smart Control is helping the users to achieve the best and
                 comfortable atmosphere for their home.
               </p>
-              <Link id="LandingButton" to="/">
-                Get Started
+              <Link id="LandingButton" to={user ? '/devices' : '/login'}>
+                {user ? 'Open Dashboard' : 'Get Started'}
+                {anonymous
+                && (
+                <FontAwesomeIcon
+                  id="right-arrow"
+                  icon={faArrowAltCircleRight}
+                />
+                ) }
+                {user
+                && (
+                <i className="fas fa-chart-network" />
+                ) }
               </Link>
               <div id="StoreContainer">
                 <a href="/">
@@ -183,7 +272,13 @@ function LandingPage() {
         <div className="RightAppSectionContainer">
           <div className="RightAppSection">
             <header className="TopRightAppSection">
-              <div className="RightHeaderItemsContainer">
+              <div className="RightHeaderItemsContainer" id="RightHeaderItemsContainer">
+                {user
+                && (
+                  <UserContainer />
+                ) }
+                {anonymous
+                && (
                 <ul className="RightHeaderItems">
                   <li className="HeaderListItem">
                     <Link className="RightMainHeaderAction" to="/login">
@@ -196,6 +291,7 @@ function LandingPage() {
                     </Link>
                   </li>
                 </ul>
+                ) }
               </div>
             </header>
             <Carousel />
@@ -203,7 +299,7 @@ function LandingPage() {
         </div>
       </div>
 
-      <div className="features-container">
+      <div className="features-container" id="features">
         <div id="features" className="features">
           <h1>Features</h1>
           <p>Control your devices from anywhere with the Android / Web App.</p>
@@ -434,18 +530,17 @@ function LandingPage() {
                 name="email-subscription"
                 placeholder="Email Address"
               />
-              <button>Subscribe</button>
+              <button>Subscribe <i className="fas fa-check-circle" /></button>
             </div>
             <div className="footer-quick-links">
               <div className="footer-links-wraper">
                 <h2>Quick Links</h2>
-                <Link className="links" to="/">
-                  Home
-                </Link>
-                <Link className="links" to="/about">
-                  About Us
-                </Link>
-                <Link className="links" to="/contact">
+                <div id="footer-active">
+                  <Link className="links" to="/">
+                    Home
+                  </Link>
+                </div>
+                <Link className="links" to="/contactus">
                   Contact Us
                 </Link>
                 <Link className="links" to="/tandc">

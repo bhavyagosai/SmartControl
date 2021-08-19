@@ -33,7 +33,6 @@ html::-webkit-scrollbar-thumb {
 html::-webkit-scrollbar-thumb:hover {
   background: #6a30d975;
 }
-
 body {
   /* font-family: Proza Libre, sans-serif; */
   /* font-family: "Montserrat", sans-serif; */
@@ -41,6 +40,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color:  transparent;
 }
 
 code {

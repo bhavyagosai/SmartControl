@@ -20,6 +20,7 @@ function AppCarousel() {
           autoPlay
           infiniteLoop
           showThumbs={false}
+          showArrows={false}
           showStatus={false}
           interval={3000}
           emulateTouch
@@ -27,18 +28,23 @@ function AppCarousel() {
         >
           <div>
             <img
-              //   style={{ objectFit: "cover" }}
               src="https://i.imgur.com/UCA24By.png"
               alt=""
             />
             {/* <p className="legend">Legend 1</p> */}
           </div>
           <div>
-            <img src="https://i.imgur.com/MjZmdC2.png" alt="" />
+            <img
+              src="https://i.imgur.com/MjZmdC2.png"
+              alt=""
+            />
             {/* <p className="legend">Legend 2</p> */}
           </div>
           <div>
-            <img src="https://i.imgur.com/ijuKRuV.png" alt="" />
+            <img
+              src="https://i.imgur.com/ijuKRuV.png"
+              alt=""
+            />
             {/* <p className="legend">Legend 3</p> */}
           </div>
         </Carousel>
