@@ -14,6 +14,6 @@ The application provides basic data such as the current situation of the devices
 
 <p align="center">
   <img src="https://media4.giphy.com/media/furvIbB46PsnBouodh/giphy.gif?cid=790b76117af542c046a53efc7b02fea695b0883b19fe3244&rid=giphy.gif&ct=g" />
-  <br><br>
+   
   <img src="https://media3.giphy.com/media/OqwX6f1t2Pi5KbGrfh/giphy.gif?cid=790b761122f7a0cd3db889017237b743b10899e3b5df92cb&rid=giphy.gif&ct=g" />
 </p>
